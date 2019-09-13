@@ -105,8 +105,26 @@ class TestSentiment(unittest.TestCase):
   def setUp(self):
   
   def test_sentiment(self):
+    self.assertTrue(nl.sentiment("geweldig")[0] > 0)
+    self.assertTrue(nl.sentiment("verschrikkelijk")[0] < 0)
+    from pattern.db import Datasheet
+    from pattern.metrics import test
+    reviews = []
+    for score, review in Datasheet.load(os.path.join(PATH, "corpora", "polarity-nl-bol.com.csv")):
+      reviews.append((review, int(score) > 0))
+    A, P, R, F = test(lambda review: nl.positive(review), reviews)
+    self.assertTrue(A > 0.808)
+    self.assertTrue(P > 0.780)
+    self.assertTrue(R > 0.860)
+    self.assertTrue(F > 0.818)
+    print("pattern.nl.sentiment()")
   
 def suite():
+  suite = unittest.TestSuite()
+  suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestInflection))
+  suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestParser))
+  suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestSentiment))
+  return suite
 
 if __name__ == "__main__":
   
